@@ -50,6 +50,7 @@ config.ini
 
 # Temporary files
 *.tmp
+*.csv
 
 # Docker
 Dockerfile
