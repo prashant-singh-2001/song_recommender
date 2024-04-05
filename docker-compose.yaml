@@ -3,8 +3,19 @@ version: '3'
 services:
   web:
     build: ./python_backend/
+    container_name: recommender_backend_c
+    image: prashantsx/recommender_backend_c:latest
     command: sh -c "uvicorn main:app --reload --port=8000 --host=0.0.0.0"
     ports:
-      - 8000:8000
-    volumes:
-      - .:/python_backend/app
+      - '8000:8000'
+
+  frontend:
+    build: ./frontend
+    container_name: recommender_frontend_c
+    image: prashantsx/recommender_frontend_c:latest
+    ports:
+      - '3000:3000'
+    stdin_open: true
+    tty: true 
+    
+
