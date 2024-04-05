@@ -45,8 +45,7 @@ def recommend_song(song_name):
 @app.post('/search')
 def search_songs(data: Song):
     s_name = data.model_dump()['name']
-    res = []
-    res.append(recommend_song(s_name))
+    res = recommend_song(s_name)
     if res != []:
         return {
             'success': True,
@@ -62,9 +61,8 @@ def search_songs(data: Song):
 
 @app.post('/recommend')
 def recommend(data: Song):
-    s_name = str(data.name)
-    res = []
-    res.append(recommend_song(s_name))
+    s_name = data.model_dump()['name']
+    res = recommend_song(s_name)
     if res != []:
         return {
             'success': True,
