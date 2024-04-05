@@ -1,11 +1,14 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from Song import Song
 import pickle
 from fuzzywuzzy import process
 import warnings
-app = FastAPI()
 
+app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=[
+                   "*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 with open('data.pkl', 'rb') as file:
     df = pickle.load(file)
 
@@ -39,12 +42,58 @@ def recommend_song(song_name):
         return recommended_songs
 
 
-@app.get('/')
-def get_song():
-    return {
-        'detail': 'Hello, World!'
-    }
+@app.post('/search')
+def search_songs(data: Song):
+    s_name = data.model_dump()['name']
+    res = []
+    res.append(recommend_song(s_name))
+    if res != []:
+        return {
+            'success': True,
+            'result': res
+        }
+    else:
+        return {
+            'success': False,
+            'error': 404,
+            'error_message': 'Song data not found.'
+        }
 
+
+@app.post('/recommend')
+def recommend(data: Song):
+    s_name = str(data.name)
+    res = []
+    res.append(recommend_song(s_name))
+    if res != []:
+        return {
+            'success': True,
+            'result': res
+        }
+    else:
+        return {
+            'success': False,
+            'error': 404,
+            'error_message': 'Song data not found.'
+        }
+
+
+@app.post('/song')
+def get_song(data: Song):
+    res = []
+    s_name = data.name
+    res.append(df[df['song'] == s_name])
+    if res != []:
+        return {
+            'success': True,
+            'result': res
+        }
+    else:
+        return {
+            'success': False,
+            'error': 404,
+            'error_message': 'Song data not found.'
+        }
 
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='127.0.0.1', port=8000)
