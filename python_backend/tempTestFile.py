@@ -1,11 +1,11 @@
 import pickle
 from fuzzywuzzy import process
 
-with open('ml_recommend\data.pkl', 'rb') as file:
+with open('data.pkl', 'rb') as file:
     df = pickle.load(file)
 
 # Load the similarity dictionary
-with open('ml_recommend\similarity_dict.pkl', 'rb') as file:
+with open('similarity_dict.pkl', 'rb') as file:
     similarity_dict = pickle.load(file)
 
 
@@ -35,7 +35,7 @@ def recommend_song(song_name):
 
 
 # Get song data based on the recommended indexes
-recommended_song_data = recommend_song(' Voices')
+recommended_song_data = dict(recommend_song(' Voices'))
 if list(recommended_song_data) != []:
     print("\nRecommended Song Data:")
-    print(recommended_song_data)
+    print(recommended_song_data['artist'])
