@@ -3,6 +3,7 @@ import { AiOutlineSearch } from "react-icons/ai";
 
 const SearchBar = ({ setRes }) => {
   const [input, setInput] = useState("");
+  const [resp, setResp] = useState();
   const fetchData = async (value) => {
     const requestOptions = {
       method: "POST",
@@ -16,8 +17,7 @@ const SearchBar = ({ setRes }) => {
         requestOptions
       );
       const json = await response.json();
-      console.log(json.result);
-      setRes(json.result[0]);
+      setResp(json.result);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -37,7 +37,10 @@ const SearchBar = ({ setRes }) => {
           value={input}
           onChange={(e) => handleChange(e.target.value)}
         />
-        <button className="absolute right-1 top-1/2 -translate-y-1/2 p-3 bg-slate-200 duration-200 text-2xl hover:bg-slate-100 rounded-full">
+        <button
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-3 bg-slate-200 duration-200 text-2xl hover:bg-slate-100 rounded-full"
+          onClick={(e) => setRes(resp)}
+        >
           <AiOutlineSearch />
         </button>
       </div>

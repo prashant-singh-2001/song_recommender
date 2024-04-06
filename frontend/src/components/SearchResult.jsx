@@ -1,22 +1,30 @@
 import React from "react";
 
-const SearchResult = ({ res }) => {
+const SearchResult = ({ data }) => {
+  const apiKey = "a5779dc2b803199332cccb4acd19e8a9";
+  const rows = Object.keys(data.artist).map((key) => (
+    <div
+      key={key}
+      className="bg-gray-200 border p-4 mb-4 rounded-xl cursor-pointer hover:bg-gray-50 duration-200"
+    >
+      <p className="text-lg font-semibold">{data.song[key]}</p>
+      <p className="text-gray-600">{data.artist[key]}</p>
+      <img
+        src={`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(
+          data.artist[key]
+        )}&track=${encodeURIComponent(data.song[key])}&format=json`}
+        alt=""
+      />
+    </div>
+  ));
+
   return (
     <div
-      className={
-        res.length === 0
-          ? "hidden "
-          : "block " +
-            "mt-2 bg-slate-300 p-4 text-white w-full rounded-xl  flex flex-col gap-2"
-      }
+      className={`mt-2 ${
+        Object.keys(data.artist).length > 0 ? "block" : "hidden"
+      }  p-4 text-gray-900 w-1/2 rounded-xl`}
     >
-      {res.map((item, index) => (
-        <div key={index}>
-          <h2>{item.artist}</h2>
-          <h3>{item.song}</h3>
-          <p>{item.text}</p>
-        </div>
-      ))}
+      <div className="w-full">{rows}</div>
     </div>
   );
 };
