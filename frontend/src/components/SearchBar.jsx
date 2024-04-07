@@ -2,8 +2,13 @@ import React, { useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
 const SearchBar = ({ setRes }) => {
+  // State variable to store the user's search input
   const [input, setInput] = useState("");
+
+  // State variable to store the fetched search results (initially empty)
   const [resp, setResp] = useState();
+
+  // Function to fetch search data from the backend API
   const fetchData = async (value) => {
     const requestOptions = {
       method: "POST",
@@ -17,14 +22,16 @@ const SearchBar = ({ setRes }) => {
         requestOptions
       );
       const json = await response.json();
-      setResp(json.result);
+      setResp(json.result); // Update search results state with API response
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
+  // Function to handle changes in the search input field
   const handleChange = (value) => {
     if (value === "") {
+      // Clear search results when the input is empty
       setResp({
         artist: [],
         song: [],
@@ -35,6 +42,7 @@ const SearchBar = ({ setRes }) => {
     setInput(value);
     fetchData(value);
   };
+
   return (
     <div className="w-1/2 relative ">
       <div className="relative">
@@ -47,9 +55,9 @@ const SearchBar = ({ setRes }) => {
         />
         <button
           className="absolute right-1 top-1/2 -translate-y-1/2 p-3 bg-slate-200 duration-200 text-2xl hover:bg-slate-100 rounded-full"
-          onClick={(e) => {
-            handleChange(input);
-            setRes(resp);
+          onClick={() => {
+            handleChange(input); // Trigger search on button click
+            setRes(resp); // Update search results state (potentially redundant)
           }}
         >
           <AiOutlineSearch />

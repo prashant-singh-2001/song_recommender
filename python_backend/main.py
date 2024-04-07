@@ -1,85 +1,90 @@
-import uvicorn
-from fastapi import FastAPI
+import uvicorn  # ASGI server for running FastAPI applications
+from fastapi import FastAPI  # Web framework for building APIs
+# Cross-Origin Resource Sharing middleware
 from fastapi.middleware.cors import CORSMiddleware
-from Song import Song
-import pickle
-from fuzzywuzzy import process
-import warnings
+from Song import Song  # Custom class representing song data (assumed)
+import pickle  # For loading pre-processed data from pickle files
+from fuzzywuzzy import process  # For fuzzy string matching
+import warnings  # For warning suppression (optional)
 
-app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=[
-                   "*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app = FastAPI()  # Create a FastAPI application instance
+
+app.add_middleware(
+    CORSMiddleware,
+    # Allow requests from any origin (for development purposes)
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
 with open('data.pkl', 'rb') as file:
+    # Load the pre-processed DataFrame containing song data
     df = pickle.load(file)
 
-# Load the similarity dictionary
 with open('similarity_dict.pkl', 'rb') as file:
+    # Load the pre-calculated similarity dictionary
     similarity_dict = pickle.load(file)
 
 
 def get_song_data(index_list):
+    """Extracts song data from the DataFrame based on the provided index list."""
 
-    # Extract song data based on the provided indexes
+    # Use iloc for efficient index-based selection
     song_data = df.iloc[index_list]
-
     return song_data
 
 
 def recommend_song(song_name):
-    # Check if the exact song name is in the similarity dictionary
+    """Recommends songs based on a given song name, using exact matching or fuzzy matching."""
+
     if song_name in similarity_dict:
+        # Exact match found in similarity dictionary
         similar_songs = similarity_dict[song_name]
         recommended_indices = [index for index, _ in similar_songs]
-        recommended_songs = get_song_data(recommended_indices)
-        return recommended_songs
+        return get_song_data(recommended_indices)
     else:
-        # If exact match not found, find the closest match using fuzzy string matching
+        # Use fuzzy string matching for closest match
         closest_match, _ = process.extractOne(
             song_name, similarity_dict.keys())
-        similar_songs = similarity_dict[closest_match]
-        recommended_indices = [index for index, _ in similar_songs]
-        recommended_songs = get_song_data(recommended_indices)
-        return recommended_songs
+        # Recommend songs based on the closest match
+        return recommend_song(closest_match)
 
 
 @app.post('/search')
 def search_songs(data: Song):
-    s_name = data.model_dump()['name'].lower()
+    """Searches for songs and returns recommendations."""
 
-    res = dict(recommend_song(s_name))
-    if res:
+    # Extract and lowercase song name
+    s_name = data.model_dump()['name'].lower()
+    recommended_songs = recommend_song(s_name)
+
+    if recommended_songs is not None:
         return {
             'success': True,
             'result': {
-                'artist': res.get('artist'),
-                'song': res.get('song'),
-                'img_url': res.get('img_url')
+                'artist': recommended_songs.get('artist'),
+                'song': recommended_songs.get('song'),
+                'img_url': recommended_songs.get('img_url')
             }
         }
     else:
-        return {
-            'success': False,
-            'error': 404,
-            'error_message': 'Song data not found.'
-        }
+        return {'success': False, 'error': 404, 'error_message': 'Song data not found.'}
 
 
 @app.post('/song')
 def get_song(data: Song):
-    res = []
-    s_name = data.name
-    res.append(df[df['song'] == s_name])
-    if res != []:
-        return {
-            'success': True,
-            'result': res
-        }
-    else:
-        return {
-            'success': False,
-            'error': 404,
-            'error_message': 'Song data not found.'
-        }
+    """Retrieves song data based on the exact song name."""
 
+    s_name = data.name
+    res = df[df['song'] == s_name]  # Filter DataFrame based on song name
+
+    if res.empty:
+        return {'success': False, 'error': 404, 'error_message': 'Song data not found.'}
+    else:
+        # Convert to list of dictionaries for response
+        return {'success': True, 'result': res.to_dict('records')}
+
+# Uncomment to run the server (typically for local development or testing):
 # if __name__ == '__main__':
 #     uvicorn.run(app, host='127.0.0.1', port=8000)

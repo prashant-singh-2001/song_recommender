@@ -1,16 +1,20 @@
 import React from "react";
 import placeholder from "./placeholder.png";
+
+// Function to check if a URL starts with "http://" or "https://"
 function isValidUrl(url) {
   return url.startsWith("http://") || url.startsWith("https://");
 }
+
 const SearchResult = ({ data }) => {
+  // Ensure data exists and has artist entries before rendering
   const rows =
     data &&
     Object.keys(data.artist).map((key) => (
       <div
-        key={key}
+        key={key} // Unique key for each result item
         className="p-4 mb-4 rounded-xl cursor-pointer hover:bg-gray-200 duration-200 flex items-center "
-        style={{ width: "100%", maxWidth: "600px" }} // Adjust the width as needed
+        style={{ width: "100%", maxWidth: "600px" }} // Adjust width as needed
       >
         <div className="w-1/3 p-1 ">
           <img
@@ -18,7 +22,7 @@ const SearchResult = ({ data }) => {
             src={
               isValidUrl(data.img_url[key]) ? data.img_url[key] : placeholder
             }
-            alt={data.song[key] + " by  " + data.artist[key]}
+            alt={data.song[key] + " by " + data.artist[key]} // Provide descriptive alt text
           />
         </div>
         <div className="w-2/3 p-4 text-center">
@@ -32,7 +36,7 @@ const SearchResult = ({ data }) => {
     <div
       className={`mt-2 ${
         data && Object.keys(data.artist).length > 0 ? "block" : "hidden"
-      }  p-4 text-gray-900 w-1/2 rounded-xl`}
+      } p-4 text-gray-900 w-1/2 rounded-xl`}
     >
       <div className="w-full flex flex-col justify-center items-center">
         {rows}

@@ -1,14 +1,12 @@
+# Base image
 FROM python:3.11.9-slim-bullseye
 
+# Working directory
 WORKDIR /app
-
 
 # Copy project files
 COPY . /app
 
-# RUN python -m venv env
-
-# RUN ./env/Scripts/activate
-
+# Install dependencies
 RUN pip install -r requirements.txt
 

@@ -1,11 +1,19 @@
+/* Import the 'Croissant One' and various weights of 'Raleway' fonts from Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Croissant+One&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
+/* Include Tailwind CSS base styles */
 @tailwind base;
+
+/* Include Tailwind CSS custom components */
 @tailwind components;
+
+/* Include Tailwind CSS utilities */
 @tailwind utilities;
 
+/* Define a custom CSS layer named 'base' */
 @layer base {
   html {
+    /* Set the default font family for the entire document to 'Raleway' */
     font-family: "Raleway", sans-serif;
   }
 }
