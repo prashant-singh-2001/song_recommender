@@ -24,11 +24,19 @@ const SearchBar = ({ setRes }) => {
   };
 
   const handleChange = (value) => {
+    if (value === "") {
+      setResp({
+        artist: [],
+        song: [],
+        text: [],
+      });
+      return;
+    }
     setInput(value);
     fetchData(value);
   };
   return (
-    <form className="w-1/2 relative ">
+    <div className="w-1/2 relative ">
       <div className="relative">
         <input
           type="search"
@@ -39,12 +47,15 @@ const SearchBar = ({ setRes }) => {
         />
         <button
           className="absolute right-1 top-1/2 -translate-y-1/2 p-3 bg-slate-200 duration-200 text-2xl hover:bg-slate-100 rounded-full"
-          onClick={(e) => setRes(resp)}
+          onClick={(e) => {
+            handleChange(input);
+            setRes(resp);
+          }}
         >
           <AiOutlineSearch />
         </button>
       </div>
-    </form>
+    </div>
   );
 };
 

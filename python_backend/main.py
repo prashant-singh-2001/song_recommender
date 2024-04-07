@@ -44,29 +44,17 @@ def recommend_song(song_name):
 
 @app.post('/search')
 def search_songs(data: Song):
-    s_name = data.model_dump()['name']
+    s_name = data.model_dump()['name'].lower()
+
     res = dict(recommend_song(s_name))
-    if res != {}:
+    if res:
         return {
             'success': True,
-            'result': res
-        }
-    else:
-        return {
-            'success': False,
-            'error': 404,
-            'error_message': 'Song data not found.'
-        }
-
-
-@app.post('/recommend')
-def recommend(data: Song):
-    s_name = data.model_dump()['name']
-    res = dict(recommend_song(s_name))
-    if res != {}:
-        return {
-            'success': True,
-            'result': res
+            'result': {
+                'artist': res.get('artist'),
+                'song': res.get('song'),
+                'img_url': res.get('img_url')
+            }
         }
     else:
         return {
