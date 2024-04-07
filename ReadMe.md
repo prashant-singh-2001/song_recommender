@@ -4,9 +4,9 @@ This project is a song recommender application that allows users to search for s
 
 ### Technologies Used
 
-- **Frontend:** Potentially React, Vue.js, or another front-end framework. (Specific framework can be confirmed by checking the `frontend` directory)
-- **Backend:** Python (Likely using libraries like Flask or Django)
-- **Deployment:** Docker
+- **Frontend:** React.js ([https://reactjs.org/](https://reactjs.org/))
+- **Backend:** Python (using FastAPI for REST API and Uvicorn as the ASGI server) ([https://fastapi.tiangolo.com/tutorial/first-steps/](https://fastapi.tiangolo.com/tutorial/first-steps/), [https://www.uvicorn.org/](https://www.uvicorn.org/))
+- **Deployment:** Docker ([https://docs.docker.com/engine/reference/builder/](https://docs.docker.com/engine/reference/builder/))
 
 ### Usage
 
