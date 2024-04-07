@@ -41,13 +41,6 @@ config.ini
 # Cached files
 .cache/
 
-# IDE specific files
-*.sublime-project
-*.sublime-workspace
-*.komodoproject
-.komodotools
-.komodoproject
-
 # Temporary files
 *.tmp
 *.csv
@@ -125,22 +118,6 @@ typings/
 
 # Optional eslint cache
 .eslintcache
-
-# Parcel cache
-.cache/
-.parcel-cache
-
-# Next.js build output
-.next/
-out/
-
-# Nuxt.js build / generate output
-.nuxt/
-dist/
-
-# Gatsby files
-.cache/
-public/
 
 # Storybook build outputs
 .storybook-out/
