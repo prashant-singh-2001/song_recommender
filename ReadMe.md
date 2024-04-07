@@ -30,8 +30,16 @@ This project is a song recommender application that allows users to search for s
 
 3. Start the application:
 
+   - - For MacOS and Linux:
+
    ```bash
    ./start.sh
+   ```
+
+   - - For Windows:
+
+   ```bash
+   ./start.bat
    ```
 
    This script builds the Docker images (if needed) and starts all the application services defined in `docker-compose.yaml`.
