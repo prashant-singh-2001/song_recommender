@@ -1,27 +1,32 @@
 import { useState } from "react";
 import "./App.css"; // Import styles for the App component
-import SearchBar from "./components/SearchBar"; // Import SearchBar component
-import SearchResult from "./components/SearchResult"; // Import SearchResult component
+import SearchPage from "./pages/SearchPage";
+import SongPage from "./pages/SongPage.jsx";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
-  // State variable to store search results (artist, song, text)
-  const [res, setRes] = useState({
-    artist: [],
-    song: [],
-    text: [],
-  });
-
+  const [song, setSong] = useState();
+  const [recommend, setRecommend] = useState();
   return (
-    <div className="m-8 flex min-w-screen min-h-screen flex-col items-center ">
-      <p className="my-4 font-semibold text-6xl font-Croissant">LyricLink</p>
-      <p className="my-4  font-semibold text-2xl">
-        {/* Title for the application */}
-        Song recommendations by Linked Lyrics
-      </p>
-      <SearchBar setRes={setRes} /> {/* Pass setRes function to SearchBar */}
-      <SearchResult data={res} />{" "}
-      {/* Pass search results (res) to SearchResult */}
-    </div>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={<SearchPage SetSong={setSong} SetRecommend={setRecommend} />}
+        />
+        <Route
+          path="/song"
+          element={
+            <SongPage
+              Song={song}
+              Recommend={recommend}
+              SetSong={setSong}
+              SetRecommend={setRecommend}
+            />
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
 
