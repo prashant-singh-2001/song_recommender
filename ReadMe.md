@@ -30,13 +30,13 @@ This project is a song recommender application that allows users to search for s
 
 3. Start the application:
 
-   - - For MacOS and Linux:
+   - For MacOS and Linux:
 
    ```bash
    ./start.sh
    ```
 
-   - - For Windows:
+   - For Windows:
 
    ```bash
    ./start.bat
@@ -58,10 +58,6 @@ This project is a song recommender application that allows users to search for s
 **Note:**
 
 This is a generic guide assuming a standard setup for this project structure. If there are specific configurations or dependencies mentioned in the code (e.g., setting environment variables), you might need to adjust the instructions accordingly.
-
-## Project Structure
-
-This project uses a separation of concerns by dividing the codebase into a backend and frontend:
 
 ## Project Structure
 
