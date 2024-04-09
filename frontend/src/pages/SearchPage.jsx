@@ -10,12 +10,8 @@ const SearchPage = ({ SetSong, SetRecommend }) => {
     text: [],
   });
   return (
-    <div className="m-8 flex min-w-screen min-h-screen flex-col items-center ">
-      <p className="my-4 font-semibold text-6xl font-Croissant">LyricLink</p>
-      <p className="my-4  font-semibold text-2xl">
-        {/* Title for the application */}
-        Song recommendations by Linked Lyrics
-      </p>
+    <div className=" flex min-w-screen min-h-screen flex-col items-center ">
+      <p className="my-8 font-semibold text-5xl">Search</p>
       <SearchBar setRes={setRes} /> {/* Pass setRes function to SearchBar */}
       <SearchResult
         data={res}

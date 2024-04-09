@@ -4,7 +4,7 @@ function isValidUrl(url) {
   return url.startsWith("http://") || url.startsWith("https://");
 }
 const SongComponent = ({ Song }) => {
-  const { artist, song, img_url } = { ...Song[0] };
+  const { artist, song, img_url } = { ...Song };
 
   return (
     <>

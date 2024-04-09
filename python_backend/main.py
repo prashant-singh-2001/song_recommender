@@ -1,3 +1,4 @@
+import random
 import uvicorn  # ASGI server for running FastAPI applications
 from fastapi import FastAPI  # Web framework for building APIs
 # Cross-Origin Resource Sharing middleware
@@ -82,8 +83,27 @@ def get_song(data: Song):
     if res.empty:
         return {'success': False, 'error': 404, 'error_message': 'Song data not found.'}
     else:
-        # Convert to list of dictionaries for response
-        return {'success': True, 'result': res.to_dict('records')}
+        # Get the first match and convert it to dictionary for response
+        result = res.iloc[0].to_dict()
+        return {'success': True, 'result': result}
+
+
+@app.get("/browse")
+def browse_songs():
+    """Fetches 50 random songs."""
+
+    # Check if DataFrame is empty
+    if df.empty:
+        return {'success': False, 'error': 404, 'error_message': 'No songs available.'}
+    else:
+        # Select 50 random indices
+        random_indices = random.sample(range(len(df)), min(len(df), 52))
+        # Select songs based on random indices
+        random_songs = df.iloc[random_indices]
+        # Convert selected songs to list of dictionaries for response
+        result = random_songs.to_dict('records')
+        return {'success': True, 'result': result}
+
 
 # Uncomment to run the server (typically for local development or testing):
 # if __name__ == '__main__':

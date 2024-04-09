@@ -1,13 +1,31 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import placeholder from "../assets/placeholder.png";
+import { useNavigate } from "react-router-dom";
 
 function isValidUrl(url) {
   return url.startsWith("http://") || url.startsWith("https://");
 }
-
-const RecommendationComponent = ({ Recommend, SetSong, SetRecommend }) => {
+const BrowsePage = ({ SetSong, SetRecommend }) => {
+  const [songs, setSongs] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchSongs();
+  }, []);
+
+  const fetchSongs = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/browse");
+      const data = await response.json();
+      if (data.success) {
+        setSongs(data.result);
+      } else {
+        console.error("Error:", data.error_message);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
   const fetchApiData = async (value, url, setter) => {
     const requestOptions = {
       method: "POST",
@@ -29,45 +47,36 @@ const RecommendationComponent = ({ Recommend, SetSong, SetRecommend }) => {
     await fetchApiData(value, "http://127.0.0.1:8000/search", SetRecommend);
     navigate("/song");
   };
-  const renderRows = () =>
-    Recommend &&
-    Object.keys(Recommend.artist).map((key) => (
+  const renderSongs = () =>
+    songs.map((song, index) => (
       <div
-        key={key}
+        key={index}
         className="p-4 mb-4 rounded-xl cursor-pointer hover:bg-gray-200 duration-200 flex items-center w-full"
-        onClick={() => fetchAndRecommend(Recommend.song[key])}
+        onClick={(e) => {
+          fetchAndRecommend(song.song);
+        }}
       >
         <div className="w-1/3 p-1">
           <img
             className="rounded-full h-24 w-24 object-cover mx-auto"
-            src={
-              isValidUrl(Recommend.img_url[key])
-                ? Recommend.img_url[key]
-                : placeholder
-            }
-            alt={`${Recommend.song[key]} by ${Recommend.artist[key]}`}
+            src={isValidUrl(song.img_url) ? song.img_url : placeholder}
+            alt={`${song.song} by ${song.artist}`}
           />
         </div>
         <div className="w-2/3 p-4 text-center">
-          <p className="text-lg font-semibold">{Recommend.song[key]}</p>
-          <p className="text-gray-600">By {Recommend.artist[key]}</p>
+          <p className="text-lg font-semibold">{song.song}</p>
+          <p className="text-gray-600">By {song.artist}</p>
         </div>
       </div>
     ));
 
   return (
-    <div
-      className={`mt-2 ${
-        Recommend && Object.keys(Recommend.artist).length > 0
-          ? "block"
-          : "hidden"
-      } p-4 text-gray-900 rounded-xl`}
-    >
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-0 text-center">
-        {renderRows()}
+    <div className="mt-2 p-4 text-gray-900 rounded-xl">
+      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-center">
+        {renderSongs()}
       </div>
     </div>
   );
 };
 
-export default RecommendationComponent;
+export default BrowsePage;
