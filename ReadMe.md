@@ -53,7 +53,8 @@ This project is a song recommender application that allows users to search for s
 
 ## Screenshots for Reference
 
-<img src="User_Guide/ScreenShots/1.png" alt="drawing" width="800"/> </br>
+<!-- <img src="User_Guide/ScreenShots/1.png" alt="drawing" width="800"/> </br> -->
+![Image Description](User_Guide/ScreenShots/1.png)
 
 ### Landing Page
 
