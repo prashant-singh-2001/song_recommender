@@ -90,7 +90,7 @@ Browse through a list of randomly selected songs from our database.
 <br/>
 <br/>
 
-<img src="User_Guide/ScreenShots/4.png" alt="drawing" width="800"/> </br>
+<img src="User_Guide/ScreenSHots/4.png" alt="drawing" width="800"/> </br>
 
 ### Song Page
 
