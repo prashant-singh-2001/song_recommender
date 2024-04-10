@@ -53,8 +53,7 @@ This project is a song recommender application that allows users to search for s
 
 ## Screenshots for Reference
 
-<!-- <img src="User_Guide/ScreenShots/1.png" alt="drawing" width="800"/> </br> -->
-![Image Description](User_Guide/ScreenShots/1.png)
+ <img src="User_Guide/ScreenSHots/1.png" alt="drawing" width="800"/> </br> 
 
 ### Landing Page
 
@@ -63,7 +62,7 @@ This project is a song recommender application that allows users to search for s
 <hr/>
 <br/>
 <br/>
-<img src="User_Guide/ScreenShots/2.png" alt="drawing" width="800"/> </br>
+<img src="User_Guide/ScreenSHots/2.png" alt="drawing" width="800"/> </br>
 
 ### Search Page
 
@@ -73,7 +72,7 @@ Type in any keyword and hit the search icon, it will search for songs that have 
 <br/>
 <br/>
 
-<img src="User_Guide/ScreenShots/2_1.png" alt="drawing" width="800"/> </br>
+<img src="User_Guide/ScreenSHots/2_1.png" alt="drawing" width="800"/> </br>
 
 ### Search Page with Results
 
@@ -81,7 +80,7 @@ Type in any keyword and hit the search icon, it will search for songs that have 
 <hr/>
 <br/>
 <br/>
-<img src="User_Guide/ScreenShots/3.png" alt="drawing" width="800"/> </br>
+<img src="User_Guide/ScreenSHots/3.png" alt="drawing" width="800"/> </br>
 
 ### Browse Page
 
