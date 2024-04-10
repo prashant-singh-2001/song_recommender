@@ -9,7 +9,7 @@ const SongComponent = ({ Song }) => {
   return (
     <>
       {Song && (
-        <div className="w-full h-full flex p-2 justify-start items-center bg-rose-700  bg-opacity-40 rounded-lg">
+        <div className="w-full h-full flex p-2 justify-start items-center bg-orange-200   rounded-lg">
           <div className="w-1/6 p-1">
             <img
               className=" max-h-48 max-w-48 object-cover rounded-lg"

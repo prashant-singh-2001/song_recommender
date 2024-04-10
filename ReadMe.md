@@ -1,14 +1,21 @@
-## Song Recommender
+# Song Recommender
 
 This project is a song recommender application that allows users to search for songs and receive recommendations based on their selections.
 
-### Technologies Used
+## Table of Contents
+
+- [Technologies Used](#technologies-used)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Screenshots](#screenshots)
+
+## Technologies Used
 
 - **Frontend:** React.js ([https://reactjs.org/](https://reactjs.org/))
 - **Backend:** Python (using FastAPI for REST API and Uvicorn as the ASGI server) ([https://fastapi.tiangolo.com/tutorial/first-steps/](https://fastapi.tiangolo.com/tutorial/first-steps/), [https://www.uvicorn.org/](https://www.uvicorn.org/))
 - **Deployment:** Docker ([https://docs.docker.com/engine/reference/builder/](https://docs.docker.com/engine/reference/builder/))
 
-### Usage
+## Installation
 
 **Prerequisites:**
 
@@ -30,34 +37,64 @@ This project is a song recommender application that allows users to search for s
 
 3. Start the application:
 
-   - For MacOS and Linux:
-
    ```bash
-   ./start.sh
+   docker-compose up
    ```
-
-   - For Windows:
-
-   ```bash
-   ./start.bat
-   ```
-
-   This script builds the Docker images (if needed) and starts all the application services defined in `docker-compose.yaml`.
 
 4. Access the application:
 
    The application is likely accessible in your web browser at `http://localhost:<port>`, where `<port>` depends on how the ports are mapped in `docker-compose.yaml`. Typically, the front-end service might be exposed on port 3000, so you could try `http://localhost:3000`.
 
-**Using the Application:**
+## Usage
 
-(The specific way users interact with the application will depend on the front-end implementation. You can explore the application interface after starting it as instructed above.)
-
-- The application likely allows you to search for songs by name or artist.
+- The application allows you to search for songs by name.
 - Based on your search, the application will recommend similar songs.
+- It also allows you to browse random songs.
 
-**Note:**
+## Screenshots for Reference
 
-This is a generic guide assuming a standard setup for this project structure. If there are specific configurations or dependencies mentioned in the code (e.g., setting environment variables), you might need to adjust the instructions accordingly.
+<img src="User_Guide/ScreenShots/1.png" alt="drawing" width="800"/> </br>
+
+### Landing Page
+
+- By Clicking on 'Find Your Jam' button you can go to Search Page and search for your favorite songs.
+- By clicking on 'Discover New Hits' button you can go to browse page and browse randomly selected songs.
+<hr/>
+<br/>
+<br/>
+<img src="User_Guide/ScreenShots/2.png" alt="drawing" width="800"/> </br>
+
+### Search Page
+
+Type in any keyword and hit the search icon, it will search for songs that have keyword(s) in their lyrics.
+
+<hr/>
+<br/>
+<br/>
+
+<img src="User_Guide/ScreenShots/2_1.png" alt="drawing" width="800"/> </br>
+
+### Search Page with Results
+
+- On clicking on any of the search results, you can go to its page and see the similarly recommended songs.
+<hr/>
+<br/>
+<br/>
+<img src="User_Guide/ScreenShots/3.png" alt="drawing" width="800"/> </br>
+
+### Browse Page
+
+Browse through a list of randomly selected songs from our database.
+
+<hr/>
+<br/>
+<br/>
+
+<img src="User_Guide/ScreenShots/4.png" alt="drawing" width="800"/> </br>
+
+### Song Page
+
+Here you can get the recommendations for similar songs to the selected one.
 
 ## Project Structure
 
