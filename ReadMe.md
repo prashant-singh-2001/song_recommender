@@ -5,15 +5,75 @@ This project is a song recommender application that allows users to search for s
 ## Table of Contents
 
 - [Technologies Used](#technologies-used)
+- [Project Workflow](#project-workflow)
+- [Project Structure](#project-structure)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Screenshots](#screenshots)
+- [Screenshots for Reference](#screenshots-for-reference)
 
 ## Technologies Used
 
-- **Frontend:** React.js ([https://reactjs.org/](https://reactjs.org/))
-- **Backend:** Python (using FastAPI for REST API and Uvicorn as the ASGI server) ([https://fastapi.tiangolo.com/tutorial/first-steps/](https://fastapi.tiangolo.com/tutorial/first-steps/), [https://www.uvicorn.org/](https://www.uvicorn.org/))
-- **Deployment:** Docker ([https://docs.docker.com/engine/reference/builder/](https://docs.docker.com/engine/reference/builder/))
+- **Frontend:** React.js ([React.js](https://reactjs.org/))
+- **Backend:** Python (using FastAPI for REST API and Uvicorn as the ASGI server) ([FastAPI](https://fastapi.tiangolo.com/tutorial/first-steps/), [Uvicorn](https://www.uvicorn.org/))
+- **Deployment:** Docker ([Docker](https://docs.docker.com/engine/reference/builder/))
+
+## Project Workflow
+
+1. **Data Collection and Pre-processing:**
+
+   - The project begins with the collection of song data, from Kaggle.
+   - The collected data is pre-processed to clean and normalize the text, remove noise, and extract relevant features for subsequent analysis.
+
+2. **Similarity Calculation:**
+
+   - The model calculates similarity between songs using techniques such as TF-IDF vectorization and cosine similarity.
+   - By comparing the lyrics of different songs, the model identifies songs that are most similar to each other and recommends them to users based on their preferences.
+
+3. **Backend Development:**
+
+   - The backend infrastructure is developed using the FastAPI framework, which provides a high-performance and asynchronous web server for handling API requests.
+   - Endpoints are defined to support different functionalities, such as searching for songs, retrieving recommendations, and serving static assets to the frontend.
+
+4. **Frontend Implementation:**
+
+   - The frontend user interface is designed and implemented using React.js and TailwindCSS, with a focus on usability, responsiveness, and visual appeal.
+   - Components are created to represent different elements of the application, such as search bars, song cards, and navigation menus.
+   - API calls are made from the frontend to the backend endpoints to fetch and display song data, recommendations, and search results in real-time.
+
+5. **Integration and Testing:**
+   - The backend and frontend components are integrated to create a cohesive and functional application.
+
+## Project Structure
+
+This project uses a separation of concerns by dividing the codebase into a backend and frontend:
+
+- **[python_backend/](python_backend/)** (Backend code)
+  - **[ml_recommend/](python_backend/ml_recommend/)** (Machine Learning Recommendation logic)
+    - **[recommender.ipynb](python_backend/ml_recommend/recommender.ipynb):** Jupyter Notebook file containing the core recommendation logic.
+    - **[spotify_millsongdata.csv](python_backend/ml_recommend/spotify_millsongdata.csv):** CSV file containing song data.
+  - **[Dockerfile](python_backend/Dockerfile):** Defines instructions for building a Docker image for the backend.
+  - **[requirements.txt](python_backend/requirements.txt):** Text file containing dependency requirements for the backend project.
+  - **[main.py](python_backend/main.py):** Likely the main entry point for the backend application.
+  - **[data.pkl](python_backend/data.pkl):** A pickled data file used by the backend.
+  - **[Song.py](python_backend/Song.py):** Python class definition for representing song data.
+  - **[similarity_dict.pkl](python_backend/similarity_dict.pkl):** A pickled dictionary used for storing song similarities.
+- **[frontend/](frontend/)** (Frontend code)
+  - **[src/](frontend/src/)** (Source code directory)
+    - **[index.js](frontend/src/index.js):** Main JavaScript entry point for the frontend application.
+    - **[index.css](frontend/src/index.css):** Main CSS stylesheet for the frontend application.
+    - **[components/](frontend/src/components/)** (Reusable UI components) - This directory contains reusable UI components for building the frontend interface.
+    - **[App.js](frontend/src/App.js):** Main React component for the application.
+    - **[App.css](frontend/src/App.css):** CSS styles specific to the App component.
+  - **[public/](frontend/public/)** (Public assets directory)
+    - **[robots.txt](frontend/public/robots.txt):** File instructing search engines how to crawl the website.
+    - **[manifest.json](frontend/public/manifest.json):** Manifest file for web applications or Progressive Web Apps (PWAs).
+    - **[logo512.png](frontend/public/logo512.png)** & **[logo192.png](frontend/public/logo192.png):** App icons in different sizes.
+    - **[index.html](frontend/public/index.html):** Main HTML file for the frontend application.
+    - **[favicon.ico](frontend/public/favicon.ico):** Favicon for the website.
+  - **[tailwind.config.js](frontend/tailwind.config.js):** Configuration file for Tailwind CSS, a utility-first CSS framework (if used in the project).
+  - **[package-lock.json](frontend/package-lock.json):** Lock file generated by npm/yarn to ensure consistent dependency versions.
+  - **[package.json](frontend/package.json):** File containing project metadata, dependencies, and scripts for the frontend.
+  - **[Dockerfile](frontend/Dockerfile):** Defines instructions for building a Docker image for the frontend.
 
 ## Installation
 
@@ -53,7 +113,7 @@ This project is a song recommender application that allows users to search for s
 
 ## Screenshots for Reference
 
- <img src="User_Guide/ScreenSHots/1.png" alt="drawing" width="800"/> </br> 
+<img src="User_Guide/ScreenSHots/1.png" alt="drawing" width="800"/> </br>
 
 ### Landing Page
 
@@ -95,39 +155,3 @@ Browse through a list of randomly selected songs from our database.
 ### Song Page
 
 Here you can get the recommendations for similar songs to the selected one.
-
-## Project Structure
-
-This project uses a separation of concerns by dividing the codebase into a backend and frontend:
-
-- **[python_backend/](python_backend/)** (Backend code)
-  - **[ml_recommend/](python_backend/ml_recommend/)** (Machine Learning Recommendation logic)
-    - **[recommender.ipynb](python_backend/ml_recommend/recommender.ipynb):** Jupyter Notebook file containing the core recommendation logic.
-    - **[spotify_millsongdata.csv](python_backend/ml_recommend/spotify_millsongdata.csv):** CSV file containing song data.
-  - **[env/](python_backend/env/)** (Virtual environment directory) - This directory is ignored by Git and should not be committed.
-  - **[**pycache**/](python_backend/**pycache**/)** (Cache directory) - This directory is automatically generated by Python and should not be committed.
-  - **[Dockerfile](python_backend/Dockerfile):** Defines instructions for building a Docker image for the backend.
-  - **[tempTestFile.py](python_backend/tempTestFile.py):** (Optional) A temporary test script.
-  - **[requirements.txt](python_backend/requirements.txt):** Text file containing dependency requirements for the backend project.
-  - **[main.py](python_backend/main.py):** Likely the main entry point for the backend application.
-  - **[data.pkl](python_backend/data.pkl):** A pickled data file used by the backend.
-  - **[Song.py](python_backend/Song.py):** Python class definition for representing song data.
-  - **[similarity_dict.pkl](python_backend/similarity_dict.pkl):**  A pickled dictionary used for storing song similarities.
-- **[frontend/](frontend/)** (Frontend code)
-  - **[node_modules/](frontend/node_modules/)** (Dependency directory) - This directory is typically ignored by Git and should not be committed. It's automatically generated by npm/yarn and contains downloaded project dependencies.
-  - **[src/](frontend/src/)** (Source code directory)
-    - **[index.js](frontend/src/index.js):** Main JavaScript entry point for the frontend application.
-    - **[index.css](frontend/src/index.css):** Main CSS stylesheet for the frontend application.
-    - **[components/](frontend/src/components/)** (Reusable UI components) - This directory contains reusable UI components for building the frontend interface.
-    - **[App.js](frontend/src/App.js):** Main React component for the application.
-    - **[App.css](frontend/src/App.css):** CSS styles specific to the App component.
-  - **[public/](frontend/public/)** (Public assets directory)
-    - **[robots.txt](frontend/public/robots.txt):** File instructing search engines how to crawl the website.
-    - **[manifest.json](frontend/public/manifest.json):** Manifest file for web applications or Progressive Web Apps (PWAs).
-    - **[logo512.png](frontend/public/logo512.png)** & **[logo192.png](frontend/public/logo192.png):** App icons in different sizes.
-    - **[index.html](frontend/public/index.html):** Main HTML file for the frontend application.
-    - **[favicon.ico](frontend/public/favicon.ico):** Favicon for the website.
-  - **[tailwind.config.js](frontend/tailwind.config.js):** Configuration file for Tailwind CSS, a utility-first CSS framework (if used in the project).
-  - **[package-lock.json](frontend/package-lock.json):** Lock file generated by npm/yarn to ensure consistent dependency versions.
-  - **[package.json](frontend/package.json):** File containing project metadata, dependencies, and scripts for the frontend.
-  - **[Dockerfile](frontend/Dockerfile):** Defines instructions for building a Docker image for the frontend.
