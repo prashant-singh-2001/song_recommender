@@ -21,14 +21,9 @@
 #     stdin_open: true
 #     tty: true
 
+version: '3'
+
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: backend
-    ports:
-      - "8000:8000"
 
   frontend:
     build:
@@ -37,3 +32,16 @@ services:
       target: frontend
     ports:
       - "3000:3000"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    ports:
+      - "8000:8000"
+
+ 
+
