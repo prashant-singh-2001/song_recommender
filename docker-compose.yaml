@@ -1,34 +1,39 @@
-# Define the Docker Compose file format version
-version: '3'
 
-# Define the services to be deployed
+
+# # Define the services to be deployed
+# services:
+
+#   # Combined service
+#   app:
+#     # Build the container image from the specified directory
+#     build: .
+#     # Assign a name to the running container
+#     container_name: recommender_app
+#     # Use a pre-built image (if available) instead of building from scratch
+#     image: prashantsx/recommender_app:latest
+#     # Command to start the application within the container
+#     command: sh -c "uvicorn main:app --reload --port=8000 --host=0.0.0.0 & npm start"
+#     # Map ports for both backend and frontend
+#     ports:
+#       - '8000:8000'  # Redirect port 8000 on host to port 8000 in the container for backend
+#       - '3000:3000'  # Redirect port 3000 on host to port 3000 in the container for frontend
+#     # Keep standard input open and allocate a pseudo-TTY
+#     stdin_open: true
+#     tty: true
+
 services:
-
-  # Backend service
-  web:
-    # Build the container image from the specified directory
-    build: ./python_backend/
-    # Assign a name to the running container
-    container_name: recommender_backend_c
-    # Use a pre-built image (if available) instead of building from scratch
-    image: prashantsx/recommender_backend_c:latest
-    # Command to start the backend application within the container
-    command: sh -c "uvicorn main:app --reload --port=8000 --host=0.0.0.0"
-    # Map a port on the host machine to a port inside the container
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
     ports:
-      - '8000:8000'  # Redirect port 8000 on host to port 8000 in the container
+      - "8000:8000"
 
-  # Frontend service
   frontend:
-    # Build the container image from the frontend directory
-    build: ./frontend
-    # Assign a name to the running container
-    container_name: recommender_frontend_c
-    # Use a pre-built image (if available) instead of building from scratch
-    image: prashantsx/recommender_frontend_c:latest
-    # Map a port on the host machine to a port inside the container
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
     ports:
-      - '3000:3000'  # Redirect port 3000 on host to port 3000 in the container
-    # Keep standard input open and allocate a pseudo-TTY
-    stdin_open: true
-    tty: true
+      - "3000:3000"
