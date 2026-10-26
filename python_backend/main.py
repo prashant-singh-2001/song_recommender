@@ -1,110 +1,104 @@
+from pathlib import Path
+import pickle
 import random
-import uvicorn  # ASGI server for running FastAPI applications
-from fastapi import FastAPI  # Web framework for building APIs
-# Cross-Origin Resource Sharing middleware
-from fastapi.middleware.cors import CORSMiddleware
-from Song import Song  # Custom class representing song data (assumed)
-import pickle  # For loading pre-processed data from pickle files
-from fuzzywuzzy import process  # For fuzzy string matching
-import warnings  # For warning suppression (optional)
 
-app = FastAPI()  # Create a FastAPI application instance
+import numpy as np
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from rapidfuzz import fuzz, process
+
+import text_utils  # noqa: F401  (the unpickled vectorizer references it)
+
+BASE = Path(__file__).parent
+
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    # Allow requests from any origin (for development purposes)
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-with open('data.pkl', 'rb') as file:
-    # Load the pre-processed DataFrame containing song data
-    df = pickle.load(file)
+songs = pickle.load(open(BASE / "songs.pkl", "rb"))
+index = pickle.load(open(BASE / "index.pkl", "rb"))
+vectorizer = index["vectorizer"]
+matrix = index["matrix"]
+matrix_t = matrix.T.tocsc()
+neighbours = index["neighbours"]
+scores = index["scores"]
 
-with open('similarity_dict.pkl', 'rb') as file:
-    # Load the pre-calculated similarity dictionary
-    similarity_dict = pickle.load(file)
+# Pre-lowercased once so matching is case-insensitive.
+titles_lower = songs["song"].str.lower().tolist()
+artists_lower = songs["artist"].str.lower().tolist()
 
-
-def get_song_data(index_list):
-    """Extracts song data from the DataFrame based on the provided index list."""
-
-    # Use iloc for efficient index-based selection
-    song_data = df.iloc[index_list]
-    return song_data
-
-
-def recommend_song(song_name):
-    """Recommends songs based on a given song name, using exact matching or fuzzy matching."""
-
-    if song_name in similarity_dict:
-        # Exact match found in similarity dictionary
-        similar_songs = similarity_dict[song_name]
-        recommended_indices = [index for index, _ in similar_songs]
-        return get_song_data(recommended_indices)
-    else:
-        # Use fuzzy string matching for closest match
-        closest_match, _ = process.extractOne(
-            song_name, similarity_dict.keys())
-        # Recommend songs based on the closest match
-        return recommend_song(closest_match)
+TITLE_CUTOFF = 80
+MIN_FUZZY_LEN = 4
+LYRICS_CUTOFF = 0.05
+MAX_RESULTS = 30
 
 
-@app.post('/search')
-def search_songs(data: Song):
-    """Searches for songs and returns recommendations."""
-
-    # Extract and lowercase song name
-    s_name = data.model_dump()['name'].lower()
-    recommended_songs = recommend_song(s_name)
-
-    if recommended_songs is not None:
-        return {
-            'success': True,
-            'result': {
-                'artist': recommended_songs.get('artist'),
-                'song': recommended_songs.get('song'),
-                'img_url': recommended_songs.get('img_url')
-            }
-        }
-    else:
-        return {'success': False, 'error': 404, 'error_message': 'Song data not found.'}
+def to_record(i, **extra):
+    row = songs.iloc[i]
+    img = row["img_url"]
+    return {
+        "id": int(row["id"]),
+        "artist": row["artist"],
+        "song": row["song"],
+        "img_url": img if isinstance(img, str) else None,
+        **extra,
+    }
 
 
-@app.post('/song')
-def get_song(data: Song):
-    """Retrieves song data based on the exact song name."""
+def get_row(song_id):
+    if not 0 <= song_id < len(songs):
+        raise HTTPException(status_code=404, detail="Song not found.")
+    return song_id
 
-    s_name = data.name
-    res = df[df['song'] == s_name]  # Filter DataFrame based on song name
 
-    if res.empty:
-        return {'success': False, 'error': 404, 'error_message': 'Song data not found.'}
-    else:
-        # Get the first match and convert it to dictionary for response
-        result = res.iloc[0].to_dict()
-        return {'success': True, 'result': result}
+@app.get("/search")
+def search(q: str = Query(..., min_length=2, max_length=100)):
+    """Search by title, artist and lyrics; returns matching songs."""
+    query = q.lower().strip()
+    found = {}
+
+    for lst, label in ((titles_lower, "title"), (artists_lower, "artist")):
+        hits = process.extract(
+            query, lst, scorer=fuzz.WRatio, score_cutoff=TITLE_CUTOFF, limit=20
+        )
+        for target, _, i in hits:
+            # WRatio over-scores very short names ("X", "Be"); require an exact hit.
+            if len(target) < MIN_FUZZY_LEN and target != query:
+                continue
+            found.setdefault(i, label)
+
+    qv = vectorizer.transform([q])
+    if qv.nnz:
+        sims = (matrix @ qv.T).toarray().ravel()
+        for i in np.argsort(-sims)[:20]:
+            if sims[i] > LYRICS_CUTOFF:
+                found.setdefault(int(i), "lyrics")
+
+    return [to_record(i, match=m) for i, m in list(found.items())[:MAX_RESULTS]]
+
+
+@app.get("/songs/{song_id}")
+def get_song(song_id: int):
+    return to_record(get_row(song_id))
+
+
+@app.get("/songs/{song_id}/recommendations")
+def get_recommendations(song_id: int):
+    get_row(song_id)
+    return [
+        to_record(int(j), score=round(float(s), 4))
+        for j, s in zip(neighbours[song_id], scores[song_id])
+    ]
 
 
 @app.get("/browse")
-def browse_songs():
-    """Fetches 50 random songs."""
-
-    # Check if DataFrame is empty
-    if df.empty:
-        return {'success': False, 'error': 404, 'error_message': 'No songs available.'}
-    else:
-        # Select 50 random indices
-        random_indices = random.sample(range(len(df)), min(len(df), 52))
-        # Select songs based on random indices
-        random_songs = df.iloc[random_indices]
-        # Convert selected songs to list of dictionaries for response
-        result = random_songs.to_dict('records')
-        return {'success': True, 'result': result}
-
-
-# Uncomment to run the server (typically for local development or testing):
-# if __name__ == '__main__':
-#     uvicorn.run(app, host='127.0.0.1', port=8000)
+def browse(limit: int = Query(50, ge=1, le=100)):
+    """Fetches `limit` random songs."""
+    picks = random.sample(range(len(songs)), min(limit, len(songs)))
+    return [to_record(i) for i in picks]

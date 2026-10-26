@@ -12,11 +12,11 @@ const HomePage = () => {
   return (
     <div
       style={divStyle}
-      className="font-Raleway bg-neutral w-full h-screen bg-green-600 pe-24 flex flex-col justify-center items-end select-none"
+      className="font-Raleway w-full h-screen bg-green-600 pe-24 flex flex-col justify-center items-end select-none"
     >
       <div className="container flex flex-col justify-center items-end ">
         <h1
-          className="font-Croissant mb-4 select-none text-accent"
+          className="font-Croissant mb-4 select-none"
           style={{ fontSize: 160 }}
         >
           <span className="text-teal-300 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.5)]">
@@ -27,18 +27,24 @@ const HomePage = () => {
           </span>
         </h1>
       </div>
-      <div className="w-10/12 text-center text-neutral flex flex-col justify-center items-end">
-        <h1 className="text-5xl font-bold font-Lobster select-none">
+      <div className="w-10/12 text-center flex flex-col justify-center items-end">
+        <h1 className="text-5xl font-bold font-Croissant select-none">
           Your Personal Playlist Guide
         </h1>
         <div className=" my-6 flex">
-          <button className="btn btn-secondary btn-lg shadow-lg hover:shadow-md hover:shadow-orange-300  font-semibold px-6 py-3 rounded-s-2xl duration-300 bg-blue-300 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.5)]">
-            <Link to="/search">Find Your Jam </Link>
-          </button>
+          <Link
+            to="/search"
+            className="shadow-lg hover:shadow-md hover:shadow-orange-300 font-semibold px-6 py-3 rounded-s-2xl duration-300 bg-blue-300 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.5)]"
+          >
+            Find Your Jam
+          </Link>
           <div className="w-4 bg-stone-200 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.5)]"></div>
-          <button className="btn btn-secondary btn-lg shadow-lg hover:shadow-md hover:shadow-sky-300  font-semibold px-6 py-3 rounded-e-2xl  duration-300 bg-orange-300 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.5)]">
-            <Link to="/browse">Discover New Hits </Link>
-          </button>
+          <Link
+            to="/browse"
+            className="shadow-lg hover:shadow-md hover:shadow-sky-300 font-semibold px-6 py-3 rounded-e-2xl duration-300 bg-orange-300 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.5)]"
+          >
+            Discover New Hits
+          </Link>
         </div>
       </div>
     </div>
