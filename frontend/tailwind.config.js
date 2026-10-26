@@ -6,11 +6,13 @@ module.exports = {
   // Tailwind's default theme configuration. You can extend or modify
   // existing properties here.
   theme: {
-    extend: {},
-    fontFamily: {
-      // Define a custom font family named "Croissant" using the
-      // "Croissant One" font from Google Fonts or a similar source.
-      Croissant: ["Croissant One"],
+    extend: {
+      // Both fonts are loaded from Google Fonts in src/index.css. Extending
+      // (rather than overriding) keeps Tailwind's default sans/serif/mono.
+      fontFamily: {
+        Croissant: ["Croissant One", "cursive"],
+        Raleway: ["Raleway", "sans-serif"],
+      },
     },
   },
   // Define any additional Tailwind plugins you want to use here.
