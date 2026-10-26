@@ -1,0 +1,3 @@
+# Extra dependencies for build_index.py (album cover lookups)
+-r requirements.txt
+requests==2.31.0
