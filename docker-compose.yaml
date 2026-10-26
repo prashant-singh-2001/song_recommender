@@ -1,40 +1,4 @@
-
-
-# # Define the services to be deployed
-# services:
-
-#   # Combined service
-#   app:
-#     # Build the container image from the specified directory
-#     build: .
-#     # Assign a name to the running container
-#     container_name: recommender_app
-#     # Use a pre-built image (if available) instead of building from scratch
-#     image: prashantsx/recommender_app:latest
-#     # Command to start the application within the container
-#     command: sh -c "uvicorn main:app --reload --port=8000 --host=0.0.0.0 & npm start"
-#     # Map ports for both backend and frontend
-#     ports:
-#       - '8000:8000'  # Redirect port 8000 on host to port 8000 in the container for backend
-#       - '3000:3000'  # Redirect port 3000 on host to port 3000 in the container for frontend
-#     # Keep standard input open and allocate a pseudo-TTY
-#     stdin_open: true
-#     tty: true
-
-version: '3'
-
 services:
-
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: frontend
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    depends_on:
-      - backend
-
   backend:
     build:
       context: .
@@ -42,6 +6,21 @@ services:
       target: backend
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
 
- 
-
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    ports:
+      # Override the host port if 3000 is taken: FRONTEND_PORT=3001 docker compose up
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
