@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import { searchSongs } from "../api";
 
-const DEBOUNCE_MS = 300;
+export const DEBOUNCE_MS = 300;
 
 const SearchBar = ({ onResults, onLoading, onError }) => {
   const [input, setInput] = useState("");
@@ -24,7 +24,8 @@ const SearchBar = ({ onResults, onLoading, onError }) => {
         onLoading(true);
         onError(null);
         try {
-          onResults(await searchSongs(q, controller.signal));
+          const results = await searchSongs(q, controller.signal);
+          onResults(results);
           onLoading(false);
         } catch (error) {
           if (error.name === "AbortError") return;
@@ -47,20 +48,20 @@ const SearchBar = ({ onResults, onLoading, onError }) => {
   };
 
   return (
-    <form className="w-full max-w-xl px-4 relative" onSubmit={handleSubmit}>
+    <form className="w-full max-w-xl px-4 relative" onSubmit={handleSubmit} role="search">
       <div className="relative">
         <input
           type="search"
           aria-label="Search songs, artists or lyrics"
           placeholder="Search songs, artists or lyrics"
-          className="w-full p-4 rounded-full bg-slate-300"
+          className="w-full p-4 pr-16 rounded-full bg-slate-300 text-gray-900 placeholder-gray-600 outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
         <button
           type="submit"
           aria-label="Search"
-          className="absolute right-1 top-1/2 -translate-y-1/2 p-3 bg-slate-200 duration-200 text-2xl hover:bg-slate-100 rounded-full"
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-3 bg-slate-200 duration-200 text-2xl text-gray-900 hover:bg-slate-100 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
         >
           <AiOutlineSearch />
         </button>

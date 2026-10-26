@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import SongComponent from "../components/SongComponent.jsx";
 import RecommendationComponent from "../components/RecommendationComponent.jsx";
+import Status from "../components/Status.jsx";
 import { getSong, getRecommendations } from "../api";
 
 const SongPage = () => {
@@ -9,6 +10,7 @@ const SongPage = () => {
   const [song, setSong] = useState(null);
   const [recommend, setRecommend] = useState([]);
   const [status, setStatus] = useState("loading"); // loading | ok | notfound | error
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -27,26 +29,29 @@ const SongPage = () => {
         setStatus(e.status === 404 ? "notfound" : "error");
       });
     return () => controller.abort();
-  }, [id]);
+  }, [id, attempt]);
 
-  if (status === "loading")
-    return <p className="mt-8 text-center text-gray-600">Loading…</p>;
-  if (status === "notfound")
-    return <p className="mt-8 text-center text-gray-600">Song not found.</p>;
-  if (status === "error")
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+
+  if (status !== "ok") {
     return (
-      <p className="mt-8 text-center text-red-600">
-        Could not load this song. Please try again.
-      </p>
+      <main>
+        <Status
+          loading={status === "loading"}
+          error={status === "error" ? "Could not load this song. Please try again." : null}
+          onRetry={retry}
+          empty={status === "notfound"}
+          emptyText="Song not found."
+        />
+      </main>
     );
+  }
 
   return (
-    <div className="flex min-h-full flex-col items-center">
-      <div className="w-full flex flex-col">
-        <SongComponent Song={song} />
-        <RecommendationComponent Recommend={recommend} />
-      </div>
-    </div>
+    <main className="flex min-h-full flex-col items-center p-2">
+      <SongComponent Song={song} />
+      <RecommendationComponent Recommend={recommend} />
+    </main>
   );
 };
 
