@@ -1,0 +1,9 @@
+.git
+**/node_modules
+**/build
+**/__pycache__
+**/*.env
+**/*.env.*
+python_backend/ml_recommend
+python_backend/covers_cache.json
+User_Guide
