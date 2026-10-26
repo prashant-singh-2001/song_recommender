@@ -1,124 +1,146 @@
-# Song Recommender
+# LyricLink: Song Recommender
 
-This project is a song recommender application that allows users to search for songs and receive recommendations based on their selections.
+LyricLink finds songs with similar lyrics. Search by song title, artist or lyric keywords, open any song, and get 20 recommendations ranked by lyric similarity. It also has a Browse page (shuffle + infinite scroll), a Favourites page and a dark mode.
 
 ## Table of Contents
 
 - [Technologies Used](#technologies-used)
-- [Project Workflow](#project-workflow)
+- [How It Works](#how-it-works)
 - [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Usage](#usage)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+- [API](#api)
+- [Rebuilding the Data](#rebuilding-the-data)
+- [Tests and Linting](#tests-and-linting)
+- [Deploying the Frontend on Vercel](#deploying-the-frontend-on-vercel)
 - [Screenshots for Reference](#screenshots-for-reference)
 
 ## Technologies Used
 
-- **Frontend:** React.js ([React.js](https://reactjs.org/))
-- **Backend:** Python (using FastAPI for REST API and Uvicorn as the ASGI server) ([FastAPI](https://fastapi.tiangolo.com/tutorial/first-steps/), [Uvicorn](https://www.uvicorn.org/))
-- **Deployment:** Docker ([Docker](https://docs.docker.com/engine/reference/builder/))
+- **Frontend:** React 18, Vite, Tailwind CSS, React Router, Vitest + Testing Library
+- **Backend:** Python 3.11, FastAPI, Uvicorn, scikit-learn (TF-IDF), RapidFuzz
+- **Deployment:** Docker (nginx serves the built frontend and proxies `/api` to the backend)
+- **Data:** the Kaggle "Spotify Million Song Dataset", tracked with Git LFS
 
-## Project Workflow
+## How It Works
 
-1. **Data Collection and Pre-processing:**
+1. **Data:** `python_backend/build_index.py` reads the CSV, takes a seeded sample of 20,000 songs (`random_state=42`) and gives each song a stable integer `id`.
+2. **Similarity:** lyrics are cleaned, tokenised and stemmed, then turned into TF-IDF vectors. For every song the 20 most similar songs are stored (cosine similarity). Covers, near-duplicate lyrics and repeated titles are removed, and songs by the same artist get a small boost.
+3. **Search:** a query is matched fuzzily against titles and artists, and against lyrics using the same TF-IDF vectorizer. Results are shown with a lyric snippet.
+4. **Recommendations:** opening a song (`/song/:id`) shows its stored neighbours with a match percentage.
 
-   - The project begins with the collection of song data, from Kaggle.
-   - The collected data is pre-processed to clean and normalize the text, remove noise, and extract relevant features for subsequent analysis.
-
-2. **Similarity Calculation:**
-
-   - `python_backend/build_index.py` takes a seeded 20,000-song sample, cleans and stems the lyrics, and builds a TF-IDF matrix.
-   - For every song it stores the 20 most similar songs (cosine similarity), keyed by a stable song `id`, in `index.pkl`. Song metadata is stored in `songs.pkl`.
-
-3. **Backend Development:**
-
-   - The backend infrastructure is developed using the FastAPI framework, which provides a high-performance and asynchronous web server for handling API requests.
-   - Endpoints: `GET /search?q=` (title, artist and lyrics), `GET /songs/{id}`, `GET /songs/{id}/recommendations` and `GET /browse?limit=`.
-
-4. **Frontend Implementation:**
-
-   - The frontend user interface is designed and implemented using React.js and TailwindCSS, with a focus on usability, responsiveness, and visual appeal.
-   - Components are created to represent different elements of the application, such as search bars, song cards, and navigation menus.
-   - API calls are made from the frontend to the backend endpoints to fetch and display song data, recommendations, and search results in real-time.
-
-5. **Integration and Testing:**
-   - The backend and frontend components are integrated to create a cohesive and functional application.
+Songs are always identified by `id`, never by title, because many titles are shared by several artists.
 
 ## Project Structure
 
-This project uses a separation of concerns by dividing the codebase into a backend and frontend:
+- **[python_backend/](python_backend/)**
+  - [main.py](python_backend/main.py): FastAPI application
+  - [build_index.py](python_backend/build_index.py): builds `songs.pkl`, `lyrics.pkl` and `index.pkl` from the CSV
+  - [text_utils.py](python_backend/text_utils.py): text cleaning and tokenising shared by the build script and the API
+  - [tests/](python_backend/tests/): API tests (pytest)
+  - [requirements.txt](python_backend/requirements.txt) (runtime), [requirements-build.txt](python_backend/requirements-build.txt), [requirements-dev.txt](python_backend/requirements-dev.txt)
+  - `ml_recommend/spotify_millsongdata.csv`: raw dataset (Git LFS)
+- **[frontend/](frontend/)**: Vite + React app (`src/pages`, `src/components`, `src/hooks`, `src/api.js`), `nginx.conf` for the production image, `vercel.json` for Vercel
+- **[Dockerfile](Dockerfile)** and **[docker-compose.yaml](docker-compose.yaml)**: one multi-stage Dockerfile with `backend`, `frontend-build` and `frontend` targets
+- **[.github/workflows/ci.yml](.github/workflows/ci.yml)**: lint, test and build on every pull request
+- **[Makefile](Makefile)**: shortcuts for the commands below
 
-- **[Dockerfile](Dockerfile)** / **[docker-compose.yaml](docker-compose.yaml):** One multi-stage Dockerfile with `backend` and `frontend` targets.
-- **[python_backend/](python_backend/)** (Backend code)
-  - **[ml_recommend/](python_backend/ml_recommend/)**
-    - **[spotify_millsongdata.csv](python_backend/ml_recommend/spotify_millsongdata.csv):** Raw Kaggle dataset used by `build_index.py`.
-  - **[build_index.py](python_backend/build_index.py):** Builds `songs.pkl` and `index.pkl` from the CSV (see "Rebuilding the data").
-  - **[text_utils.py](python_backend/text_utils.py):** Text cleaning/tokenising shared by the build script and the API.
-  - **[main.py](python_backend/main.py):** FastAPI application.
-  - **[requirements.txt](python_backend/requirements.txt):** Backend dependencies.
-  - **songs.pkl / index.pkl:** Generated song metadata and similarity index.
-- **[frontend/](frontend/)** (Frontend code)
-  - **[src/](frontend/src/)** (Source code directory)
-    - **[index.js](frontend/src/index.js):** Main JavaScript entry point for the frontend application.
-    - **[index.css](frontend/src/index.css):** Main CSS stylesheet for the frontend application.
-    - **[components/](frontend/src/components/)** (Reusable UI components) - This directory contains reusable UI components for building the frontend interface.
-    - **[App.js](frontend/src/App.js):** Main React component for the application.
-    - **[App.css](frontend/src/App.css):** CSS styles specific to the App component.
-  - **[public/](frontend/public/)** (Public assets directory)
-    - **[robots.txt](frontend/public/robots.txt):** File instructing search engines how to crawl the website.
-    - **[manifest.json](frontend/public/manifest.json):** Manifest file for web applications or Progressive Web Apps (PWAs).
-    - **[logo512.png](frontend/public/logo512.png)** & **[logo192.png](frontend/public/logo192.png):** App icons in different sizes.
-    - **[index.html](frontend/public/index.html):** Main HTML file for the frontend application.
-    - **[favicon.ico](frontend/public/favicon.ico):** Favicon for the website.
-  - **[tailwind.config.js](frontend/tailwind.config.js):** Configuration file for Tailwind CSS, a utility-first CSS framework (if used in the project).
-  - **[package-lock.json](frontend/package-lock.json):** Lock file generated by npm/yarn to ensure consistent dependency versions.
-  - **[package.json](frontend/package.json):** File containing project metadata, dependencies, and scripts for the frontend.
+## Getting Started
 
-## Installation
-
-**Prerequisites:**
-
-- Docker installed: [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
-
-**Instructions:**
-
-1. Clone this repository:
-
-   ```bash
-   git clone https://github.com/prashant-singh-2001/song_recommender.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-   cd song_recommender
-   ```
-
-3. Start the application:
-
-   ```bash
-   docker-compose up
-   ```
-
-4. Access the application:
-
-   Open `http://localhost:3000` (frontend). The API runs on `http://localhost:8000`. To point the frontend at a different API, set `REACT_APP_API_URL`.
-
-## Usage
-
-- Search by song title, artist or lyrics keywords.
-- Open any song to see 20 similar songs, based on lyrics.
-- It also allows you to browse random songs.
-
-## Rebuilding the data
-
-Run inside the backend container so the pickles match the runtime library versions:
+The data files are stored with [Git LFS](https://git-lfs.com/). Install it **before cloning**:
 
 ```bash
-docker compose build backend
-docker run --rm -v "$(pwd):/app/backend" -w /app/backend/python_backend song_recommender-backend python build_index.py
+git lfs install
+git clone https://github.com/prashant-singh-2001/song_recommender.git
+cd song_recommender
 ```
 
-Set `LASTFM_API_KEY` (add `-e LASTFM_API_KEY`) to fetch album covers that are not already known; songs without a cover show a placeholder.
+### With Docker (recommended)
+
+```bash
+docker compose up --build
+```
+
+- App: http://localhost:3000 (nginx; API calls go through `/api`)
+- API: http://localhost:8000 (docs at http://localhost:8000/docs)
+
+If port 3000 is already in use, run `FRONTEND_PORT=3001 docker compose up --build`.
+
+### Without Docker
+
+You need Python 3.11 and Node 24.
+
+```bash
+# terminal 1: API on http://localhost:8000
+cd python_backend
+pip install -r requirements.txt
+python -m uvicorn main:app --reload --port 8000
+
+# terminal 2: app on http://localhost:3000
+cd frontend
+npm install
+npm run dev
+```
+
+`make dev-backend` and `make dev-frontend` run the same commands if you have `make`.
+
+## Configuration
+
+Copy [.env.example](.env.example) to `.env` to change any of these (all are optional):
+
+| Variable | Used by | Purpose |
+|---|---|---|
+| `FRONTEND_PORT` | docker compose | Host port for the frontend (default 3000) |
+| `CORS_ORIGINS` | backend | Comma-separated browser origins allowed to call the API directly |
+| `VITE_API_URL` | frontend | Where the browser finds the API (default `http://localhost:8000`; the Docker image uses `/api`) |
+| `LASTFM_API_KEY` | `build_index.py` | Fetch album covers that are not already known |
+
+## API
+
+| Endpoint | Description |
+|---|---|
+| `GET /health` | `{status, songs}` |
+| `GET /search?q=` | Songs matching a title, artist or lyrics (`q` is 2-100 characters). Each hit has `id, artist, song, img_url, match, snippet` |
+| `GET /songs/{id}` | One song, or 404 |
+| `GET /songs/{id}/recommendations` | 20 similar songs with a `score` between 0 and 1 |
+| `GET /browse?limit=&offset=&seed=` | A page of songs in a seeded random order: `{items, total, seed, next_offset}`. Reuse the returned `seed` to page without repeats |
+
+## Rebuilding the Data
+
+Run the build inside the backend image so the pickles match the runtime library versions:
+
+```bash
+make build-index
+# or, without make:
+docker compose build backend
+docker run --rm -e LASTFM_API_KEY -v "$(pwd)/python_backend:/app/backend" -w /app/backend \
+  song_recommender-backend sh -c "pip install -q -r requirements-build.txt && python build_index.py"
+```
+
+- The same seed gives the same sample and ids, so existing `/song/:id` links keep working.
+- Covers already in `songs.pkl` are reused. Set `LASTFM_API_KEY` to fetch the rest (about 4 requests per second, cached in `covers_cache.json` so an interrupted run resumes). Songs without a cover show a placeholder.
+- Commit the regenerated `*.pkl` files; Git LFS stores them.
+
+## Tests and Linting
+
+```bash
+# backend (pytest + ruff)
+cd python_backend && pip install -r requirements-dev.txt && ruff check . && pytest
+
+# frontend (vitest + eslint)
+cd frontend && npm ci && npm run lint && npm test -- --run
+```
+
+The tests need the real data files, so make sure Git LFS has fetched them (`git lfs pull`).
+
+## Deploying the Frontend on Vercel
+
+Vercel can host the static frontend only. In the Vercel project settings use:
+
+- **Root Directory:** `frontend`
+- **Framework Preset:** Vite (Build Command `npm run build`, Output Directory `dist`, no `docker compose` override)
+- **Node.js Version:** 24.x
+- **Environment variable** `VITE_API_URL`: the public URL of a hosted backend (otherwise search and browse have nothing to call)
 
 ## Screenshots for Reference
 
@@ -126,8 +148,9 @@ Set `LASTFM_API_KEY` (add `-e LASTFM_API_KEY`) to fetch album covers that are no
 
 ### Landing Page
 
-- By Clicking on 'Find Your Jam' button you can go to Search Page and search for your favorite songs.
-- By clicking on 'Discover New Hits' button you can go to browse page and browse randomly selected songs.
+- **Find Your Jam** opens the Search page.
+- **Discover New Hits** opens the Browse page.
+
 <hr/>
 <br/>
 <br/>
@@ -145,7 +168,8 @@ Type a song, artist or lyric keyword; results appear as you type (or press Enter
 
 ### Search Page with Results
 
-- On clicking on any of the search results, you can go to its page and see the similarly recommended songs.
+Click a result to open its page and see similar songs.
+
 <hr/>
 <br/>
 <br/>
@@ -153,7 +177,7 @@ Type a song, artist or lyric keyword; results appear as you type (or press Enter
 
 ### Browse Page
 
-Browse through a list of randomly selected songs from our database.
+Browse random songs from the database. Scroll for more, or press **Shuffle** for a new order.
 
 <hr/>
 <br/>
@@ -163,4 +187,6 @@ Browse through a list of randomly selected songs from our database.
 
 ### Song Page
 
-Here you can get the recommendations for similar songs to the selected one.
+See recommendations for similar songs, favourite the song, or look it up on Spotify and YouTube.
+
+> The screenshots were taken before the redesign (favourites, dark mode, match percentages) and may differ slightly.
