@@ -43,7 +43,6 @@ config.ini
 
 # Temporary files
 *.tmp
-*.csv
 
 
 # Miscellaneous
