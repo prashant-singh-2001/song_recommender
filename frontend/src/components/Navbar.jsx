@@ -4,7 +4,7 @@ import { FiMoon, FiSun } from "react-icons/fi";
 import useTheme from "../hooks/useTheme";
 
 const linkClass = ({ isActive }) =>
-  `mr-4 transition duration-200 hover:text-white outline-none focus-visible:ring-2 focus-visible:ring-orange-400 rounded ${
+  `mr-2 sm:mr-4 text-sm sm:text-base transition duration-200 hover:text-white outline-none focus-visible:ring-2 focus-visible:ring-orange-400 rounded ${
     isActive ? "text-white font-semibold" : "text-gray-300"
   }`;
 
@@ -20,11 +20,11 @@ export default function Navbar() {
   return (
     <nav
       aria-label="Main"
-      className="sticky top-0 z-10 bg-gray-800 text-white p-4 flex justify-between items-center"
+      className="sticky top-0 z-10 bg-gray-800 text-white px-3 py-4 sm:p-4 flex justify-between items-center gap-3"
     >
       <Link
         to="/"
-        className="text-xl font-bold font-Croissant outline-none focus-visible:ring-2 focus-visible:ring-orange-400 rounded"
+        className="text-lg sm:text-xl font-bold font-Croissant outline-none focus-visible:ring-2 focus-visible:ring-orange-400 rounded"
       >
         LyricLink
       </Link>
