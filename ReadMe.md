@@ -13,6 +13,7 @@ LyricLink finds songs with similar lyrics. Search by song title, artist or lyric
 - [Rebuilding the Data](#rebuilding-the-data)
 - [Tests and Linting](#tests-and-linting)
 - [Deploying the Frontend on Vercel](#deploying-the-frontend-on-vercel)
+- [Deploying the Backend on Fly.io](#deploying-the-backend-on-flyio)
 - [Screenshots for Reference](#screenshots-for-reference)
 
 ## Technologies Used
@@ -141,6 +142,29 @@ Vercel can host the static frontend only. In the Vercel project settings use:
 - **Framework Preset:** Vite (Build Command `npm run build`, Output Directory `dist`, no `docker compose` override)
 - **Node.js Version:** 24.x
 - **Environment variable** `VITE_API_URL`: the public URL of a hosted backend (otherwise search and browse have nothing to call)
+
+## Deploying the Backend on Fly.io
+
+The API runs on [Fly.io](https://fly.io) from the `backend` target of the root `Dockerfile` (see [fly.toml](fly.toml)). `fly deploy` uploads your local folder, so make sure the Git LFS files are real files first (`git lfs pull`); otherwise the pickles are tiny pointer files and the app crashes on start.
+
+```bash
+# one time
+fly auth login
+fly launch --no-deploy --copy-config --name <your-unique-app-name>   # app names are global
+
+# allow your frontend to call the API (use your real Vercel URL; no trailing slash)
+fly secrets set CORS_ORIGINS="https://<your-app>.vercel.app"
+
+fly deploy
+fly status && curl https://<your-unique-app-name>.fly.dev/health
+```
+
+Then in Vercel, set `VITE_API_URL=https://<your-unique-app-name>.fly.dev` and redeploy (it is baked in at build time).
+
+Notes:
+- The machine has 1 GB of RAM and stops when idle (`auto_stop_machines`), so the first request after a pause takes a few seconds while the index loads. Set `min_machines_running = 1` in `fly.toml` to keep it warm.
+- `CORS_ORIGINS` must list each exact origin. Vercel preview deployments have different URLs, so they are blocked unless you add them (comma-separated).
+- Check `fly logs` and `fly status` after the first deploy; if the machine is killed for memory, raise `memory` in `fly.toml`.
 
 ## Screenshots for Reference
 
