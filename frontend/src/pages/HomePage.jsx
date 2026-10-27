@@ -25,7 +25,7 @@ const HomePage = () => {
           Link
         </span>
       </h1>
-      <h2 className="text-3xl sm:text-5xl font-bold font-Croissant text-center sm:text-right text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.5)]">
+      <h2 className="text-3xl sm:text-5xl font-bold font-Croissant text-center sm:text-right text-gray-800">
         Your Personal Playlist Guide
       </h2>
       <div className="my-6 flex">
