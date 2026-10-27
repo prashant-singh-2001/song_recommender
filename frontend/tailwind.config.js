@@ -1,10 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  // Specify the paths to your components and other source files
-  // for Tailwind to scan and extract classnames from.
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
-  // Tailwind's default theme configuration. You can extend or modify
-  // existing properties here.
+export default {
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       // Both fonts are loaded from Google Fonts in src/index.css. Extending
@@ -15,6 +12,5 @@ module.exports = {
       },
     },
   },
-  // Define any additional Tailwind plugins you want to use here.
   plugins: [],
 };

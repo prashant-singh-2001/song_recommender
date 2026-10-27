@@ -1,41 +1,33 @@
-# Use the official Python image as base for backend
+# Backend: FastAPI served by uvicorn (no --reload; this is the production image).
 FROM python:3.11-slim AS backend
-
-# Set the working directory for backend
 WORKDIR /app/backend
 
-# Copy the backend source code to the container
-COPY python_backend/ .
-
-# Copy the requirements file to the container
+# Install dependencies first so this layer is cached until requirements change.
 COPY python_backend/requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port the backend will run on
+COPY python_backend/ .
+
 EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# Command to run the backend server
-CMD ["uvicorn", "main:app", "--reload", "--host=0.0.0.0", "--port=8000"]
 
-# Use the official Node.js image as base for frontend
-FROM node:14 AS frontend
-
-# Set the working directory for frontend
+# Frontend build stage: compile the Vite app to static files.
+FROM node:24-alpine AS frontend-build
 WORKDIR /app/frontend
 
-# Copy package.json and package-lock.json to the container
 COPY frontend/package*.json ./
+RUN npm ci
 
-# Install frontend dependencies
-RUN npm install
-
-# Copy the frontend source code to the container
 COPY frontend/ .
+# nginx (below) proxies /api to the backend, so the browser never needs its address.
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build
 
-# Expose the port the frontend will run on
-EXPOSE 3000
 
-# Command to run the frontend server
-CMD ["npm", "start"]
+# Frontend runtime: nginx serves the build and proxies /api to the backend.
+FROM nginx:alpine AS frontend
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=frontend-build /app/frontend/dist /usr/share/nginx/html
+EXPOSE 80

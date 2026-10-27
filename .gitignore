@@ -43,7 +43,6 @@ config.ini
 
 # Temporary files
 *.tmp
-*.csv
 
 
 # Miscellaneous
@@ -133,3 +132,6 @@ yarn-error.log
 .pnp.js
 
 # End of React section
+
+# Keep the documented example
+!.env.example

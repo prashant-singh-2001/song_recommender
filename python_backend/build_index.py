@@ -1,14 +1,17 @@
-"""Builds songs.pkl and index.pkl from the raw Kaggle CSV.
+"""Builds songs.pkl, lyrics.pkl and index.pkl from the raw Kaggle CSV.
 
 Usage (run inside the backend container so pickles match runtime versions):
+    pip install -r requirements-build.txt
     python build_index.py
 
 Optional: set LASTFM_API_KEY to fetch album covers that are not already known.
 Covers fetched are cached in covers_cache.json so an interrupted run resumes.
+Covers already present in an existing songs.pkl are always reused.
 """
 import json
 import os
 import pickle
+import re
 import time
 from pathlib import Path
 
@@ -21,23 +24,34 @@ from text_utils import clean, tokenize
 
 BASE = Path(__file__).parent
 CSV = BASE / "ml_recommend" / "spotify_millsongdata.csv"
-OLD_DATA = BASE / "data.pkl"
+SONGS = BASE / "songs.pkl"
+LYRICS = BASE / "lyrics.pkl"
+INDEX = BASE / "index.pkl"
 CACHE = BASE / "covers_cache.json"
 SAMPLE_SIZE = 20000
 SEED = 42
 TOP_K = 20
+POOL = 50  # candidates considered before re-ranking
 CHUNK = 1000
+NEAR_DUPLICATE = 0.9  # lyric cosine above this means "same song, different upload"
+ARTIST_BOOST = 0.05
 
 
 def key(artist, song):
     return f"{artist}\u0001{song}"
 
 
+def norm_title(title):
+    """Lowercase, drop (live)/[remix]-style suffixes and punctuation."""
+    title = re.sub(r"[\(\[].*?[\)\]]", " ", title.lower())
+    return re.sub(r"[^a-z0-9]+", " ", title).strip()
+
+
 def known_covers():
-    """Covers from the previous data.pkl plus the resumable fetch cache."""
+    """Covers from the previous songs.pkl plus the resumable fetch cache."""
     covers = {}
-    if OLD_DATA.exists():
-        old = pickle.load(open(OLD_DATA, "rb"))
+    if SONGS.exists():
+        old = pickle.load(open(SONGS, "rb"))
         for a, s, u in zip(old["artist"], old["song"], old["img_url"]):
             if isinstance(u, str) and u.startswith(("http://", "https://")):
                 covers[key(a, s)] = u
@@ -61,6 +75,24 @@ def fetch_cover(artist, song, api_key):
     except Exception:
         pass
     return None
+
+
+def rerank(row, cands, sims, titles, artists):
+    """Pick TOP_K from the candidate pool.
+
+    Drops covers (same normalised title as the song itself), near-duplicate
+    lyrics and repeated titles, then boosts songs by the same artist.
+    """
+    seen = {titles[row]}
+    kept = []
+    for j in cands:
+        s = float(sims[j])
+        if s <= 0 or s > NEAR_DUPLICATE or titles[j] in seen:
+            continue
+        seen.add(titles[j])
+        kept.append((s + (ARTIST_BOOST if artists[j] == artists[row] else 0), j, s))
+    kept.sort(key=lambda t: -t[0])
+    return [(j, s) for _, j, s in kept[:TOP_K]]
 
 
 def main():
@@ -95,31 +127,47 @@ def main():
     matrix = vectorizer.fit_transform(df["text"]).tocsr()
 
     n = matrix.shape[0]
+    titles = [norm_title(s) for s in df["song"]]
+    artists = df["artist"].str.lower().tolist()
     neighbours = np.zeros((n, TOP_K), dtype=np.int32)
     scores = np.zeros((n, TOP_K), dtype=np.float32)
     matrix_t = matrix.T.tocsc()
+    short = 0
     for start in range(0, n, CHUNK):
         end = min(start + CHUNK, n)
         sims = (matrix[start:end] @ matrix_t).toarray()
         sims[np.arange(end - start), np.arange(start, end)] = -1  # never itself
-        top = np.argpartition(-sims, TOP_K, axis=1)[:, :TOP_K]
-        rows = np.arange(end - start)[:, None]
-        order = np.argsort(-sims[rows, top], axis=1)
-        top = top[rows, order]
-        neighbours[start:end] = top
-        scores[start:end] = sims[rows, top]
+        pool = np.argpartition(-sims, POOL, axis=1)[:, :POOL]
+        for r in range(end - start):
+            row = start + r
+            cands = pool[r][np.argsort(-sims[r, pool[r]])]
+            picked = rerank(row, cands, sims[r], titles, artists)
+            short += len(picked) < TOP_K
+            for k, (j, s) in enumerate(picked):
+                neighbours[row, k] = j
+                scores[row, k] = min(s, 1.0)
+            # Rows with fewer than TOP_K survivors repeat their best entry's
+            # slot as -1 so the API can drop it.
+            for k in range(len(picked), TOP_K):
+                neighbours[row, k] = -1
 
     songs = df[["id", "artist", "song", "img_url"]]
-    pickle.dump(songs, open(BASE / "songs.pkl", "wb"))
+    lyrics = [re.sub(r"\s+", " ", t).strip() for t in df["text"]]
+    pickle.dump(songs, open(SONGS, "wb"))
+    pickle.dump(lyrics, open(LYRICS, "wb"))
     pickle.dump(
         {"vectorizer": vectorizer, "matrix": matrix,
          "neighbours": neighbours, "scores": scores},
-        open(BASE / "index.pkl", "wb"),
+        open(INDEX, "wb"),
     )
 
-    assert not (neighbours == np.arange(n)[:, None]).any(), "self-recommendation"
+    ids = np.arange(n)[:, None]
+    assert not (neighbours == ids).any(), "self-recommendation"
+    for row in range(n):
+        picked = [j for j in neighbours[row] if j >= 0]
+        assert all(titles[j] != titles[row] for j in picked), "cover as recommendation"
     print(f"songs={n} covers: reused={reused} fetched={fetched} "
-          f"missing={int(songs['img_url'].isna().sum())}")
+          f"missing={int(songs['img_url'].isna().sum())} short_lists={short}")
 
 
 if __name__ == "__main__":
